@@ -1,0 +1,126 @@
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local lp = Players.LocalPlayer
+
+-- 1. ANA PANEL (800x500)
+local screenGui = Instance.new("ScreenGui", CoreGui)
+local mainFrame = Instance.new("Frame", screenGui)
+mainFrame.Size = UDim2.new(0, 800, 0, 500)
+mainFrame.Position = UDim2.new(0.5, -400, 0.5, -250)
+mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+mainFrame.Visible = false; mainFrame.Active = true; mainFrame.Draggable = true
+
+-- Toggle (B)
+local bBtn = Instance.new("TextButton", screenGui)
+bBtn.Size = UDim2.new(0, 50, 0, 50); bBtn.Position = UDim2.new(1, -60, 0.5, -25)
+bBtn.Text = "B"; bBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50); bBtn.TextColor3 = Color3.new(1,1,1)
+bBtn.MouseButton1Click:Connect(function() mainFrame.Visible = not mainFrame.Visible end)
+
+-- AYARLAR
+_G.SmartGenESP = false
+_G.PuzzleAutoSolver = false
+_G.InfiniteJump = false
+_G.AutoBlock = false 
+_G.MedkitESP = false 
+_G.KillAuraTP = false
+_G.SpeedActive = false
+_G.HizMiktari = 0.4
+
+-- Hız Göstergesi
+local speedValLabel = Instance.new("TextLabel", mainFrame)
+speedValLabel.Size = UDim2.new(0, 200, 0, 30); speedValLabel.Position = UDim2.new(0.5, -100, 0, 320)
+speedValLabel.Text = "HIZ: " .. _G.HizMiktari; speedValLabel.TextColor3 = Color3.new(1, 1, 0); speedValLabel.BackgroundTransparency = 1; speedValLabel.TextSize = 20
+
+-- HEDEF BULUCU
+local function GetTarget()
+    local closest, dist = nil, math.huge
+    for _, v in pairs(Players:GetPlayers()) do
+        if v ~= lp and v.Character and v.Character:FindFirstChild("Humanoid") and v.Character.Humanoid.Health > 0 then
+            local d = (lp.Character.HumanoidRootPart.Position - v.Character.HumanoidRootPart.Position).Magnitude
+            if d < dist then dist = d; closest = v end
+        end
+    end
+    return closest
+end
+
+-- 🛠️ ANA DÖNGÜ (Hız, Jump, Aura)
+RunService.Heartbeat:Connect(function()
+    -- 1. Zıplama Fix
+    if _G.InfiniteJump and lp.Character and lp.Character:FindFirstChild("Humanoid") then
+        lp.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+
+    -- 2. CFrame Speed
+    if _G.SpeedActive and not _G.KillAuraTP and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+        local hum = lp.Character:FindFirstChild("Humanoid")
+        if hum and hum.MoveDirection.Magnitude > 0 then
+            lp.Character.HumanoidRootPart.CFrame = lp.Character.HumanoidRootPart.CFrame + (hum.MoveDirection * _G.HizMiktari)
+        end
+    end
+
+    -- 3. Kill Aura TP
+    if _G.KillAuraTP and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+        local target = GetTarget()
+        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+            lp.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3)
+        end
+    end
+end)
+
+-- 🛠️ ESP DÖNGÜSÜ (Medkit ve Jeneratör)
+task.spawn(function()
+    while task.wait(1) do
+        for _, v in pairs(workspace:GetDescendants()) do
+            -- Medkit ESP Fix
+            if _G.MedkitESP and (v.Name:lower():find("medkit") or v.Name:lower():find("medical")) then
+                if not v:FindFirstChild("MedESP") then
+                    local h = Instance.new("Highlight", v); h.Name = "MedESP"; h.FillColor = Color3.new(0,1,0)
+                end
+            elseif not _G.MedkitESP and v:FindFirstChild("MedESP") then v.MedESP:Destroy() end
+
+            -- Generator ESP Fix
+            if _G.SmartGenESP and v.Name:lower():find("generator") and not v:FindFirstChild("Completed") then
+                if not v:FindFirstChild("GenESP") then
+                    local h = Instance.new("Highlight", v); h.Name = "GenESP"; h.FillColor = Color3.new(1,0,0)
+                end
+            elseif not _G.SmartGenESP and v:FindFirstChild("GenESP") then v.GenESP:Destroy() end
+        end
+    end
+end)
+
+-- BUTON SİSTEMİ
+local function addToggle(text, pos, var)
+    local btn = Instance.new("TextButton", mainFrame)
+    btn.Size = UDim2.new(0, 350, 0, 45); btn.Position = pos
+    btn.Text = text .. ": OFF"; btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30); btn.TextColor3 = Color3.new(1,1,1)
+    btn.MouseButton1Click:Connect(function()
+        _G[var] = not _G[var]
+        btn.Text = text .. (_G[var] and ": ON" or ": OFF")
+        btn.BackgroundColor3 = _G[var] and Color3.fromRGB(200, 0, 0) or Color3.fromRGB(30, 30, 30)
+    end)
+end
+
+-- Butonları Dizme
+addToggle("ESP (Gens)", UDim2.new(0, 20, 0, 40), "SmartGenESP")
+addToggle("Auto Solve Puzzle", UDim2.new(0, 420, 0, 40), "PuzzleAutoSolver")
+addToggle("Infinite Jump", UDim2.new(0, 20, 0, 95), "InfiniteJump")
+addToggle("Auto Block", UDim2.new(0, 420, 0, 95), "AutoBlock")
+addToggle("Medkit ESP", UDim2.new(0, 20, 0, 150), "MedkitESP")
+addToggle("Kill Aura Teleport", UDim2.new(0, 420, 0, 150), "KillAuraTP")
+addToggle("CFrame Speed (Active)", UDim2.new(0, 225, 0, 210), "SpeedActive")
+
+-- Hız Artır Azalt Butonları
+local function speedBtn(txt, pos, val)
+    local b = Instance.new("TextButton", mainFrame)
+    b.Size = UDim2.new(0, 170, 0, 40); b.Position = pos; b.Text = txt
+    b.BackgroundColor3 = Color3.fromRGB(50,50,50); b.TextColor3 = Color3.new(1,1,1)
+    b.MouseButton1Click:Connect(function()
+        _G.HizMiktari = math.max(0.1, _G.HizMiktari + val)
+        speedValLabel.Text = "HIZ: " .. string.format("%.1f", _G.HizMiktari)
+    end)
+end
+
+speedBtn("HIZ ARTIR (+)", UDim2.new(0, 225, 0, 360), 0.1)
+speedBtn("HIZ AZALT (-)", UDim2.new(0, 405, 0, 360), -0.1)
