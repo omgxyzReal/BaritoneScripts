@@ -1,0 +1,266 @@
+local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+local RunService = game:GetService("RunService")
+
+-- ================= GUI ROOT =================
+local gui = Instance.new("ScreenGui", player.PlayerGui)
+gui.ResetOnSpawn = false
+
+-- ================= PASSWORD GUI =================
+local passFrame = Instance.new("Frame", gui)
+passFrame.Size = UDim2.fromOffset(360,180)
+passFrame.Position = UDim2.fromScale(0.5,0.5)
+passFrame.AnchorPoint = Vector2.new(0.5,0.5)
+passFrame.BackgroundColor3 = Color3.fromRGB(15,15,15)
+passFrame.BorderColor3 = Color3.fromRGB(170,0,0)
+passFrame.BorderSizePixel = 2
+
+local title = Instance.new("TextLabel", passFrame)
+title.Size = UDim2.new(1,0,0,45)
+title.Text = "ENTER PASSWORD"
+title.TextScaled = true
+title.TextColor3 = Color3.fromRGB(200,0,0)
+title.BackgroundTransparency = 1
+
+local box = Instance.new("TextBox", passFrame)
+box.Size = UDim2.new(0.8,0,0,38)
+box.Position = UDim2.new(0.1,0,0.45,0)
+box.PlaceholderText = "Password"
+box.TextScaled = true
+box.BackgroundColor3 = Color3.fromRGB(30,30,30)
+box.TextColor3 = Color3.new(1,1,1)
+box.ClearTextOnFocus = false
+
+local enter = Instance.new("TextButton", passFrame)
+enter.Size = UDim2.new(0.45,0,0,35)
+enter.Position = UDim2.new(0.275,0,0.72,0)
+enter.Text = "ENTER"
+enter.BackgroundColor3 = Color3.fromRGB(170,0,0)
+enter.TextColor3 = Color3.new(1,1,1)
+
+local discord = Instance.new("TextLabel", gui)
+discord.Size = UDim2.fromOffset(320,30)
+discord.Position = UDim2.new(0.5,-160,0,10)
+discord.Text = "discord.gg/Fh7YEWqmpg"
+discord.TextScaled = true
+discord.TextColor3 = Color3.fromRGB(255,80,80)
+discord.BackgroundTransparency = 1
+discord.Visible = false
+
+-- ================= TOGGLE BUTTON =================
+local toggleBtn = Instance.new("TextButton", gui)
+toggleBtn.Size = UDim2.fromOffset(45,45)
+toggleBtn.Position = UDim2.new(0,10,0.5,-22)
+toggleBtn.Text = "B"
+toggleBtn.TextScaled = true
+toggleBtn.BackgroundColor3 = Color3.fromRGB(170,0,0)
+toggleBtn.TextColor3 = Color3.new(1,1,1)
+toggleBtn.Visible = false
+
+-- ================= MAIN GUI =================
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.fromOffset(650,360)
+main.Position = UDim2.fromScale(0.5,0.5)
+main.AnchorPoint = Vector2.new(0.5,0.5)
+main.BackgroundColor3 = Color3.fromRGB(20,20,20)
+main.BorderColor3 = Color3.fromRGB(170,0,0)
+main.BorderSizePixel = 2
+main.Visible = false
+main.Active = true
+main.Draggable = true
+
+toggleBtn.MouseButton1Click:Connect(function()
+	main.Visible = not main.Visible
+end)
+
+-- ================= PASSWORD CHECK =================
+enter.MouseButton1Click:Connect(function()
+	if box.Text == "2013" then
+		title.Text = "WELCOME BARITONE"
+		box.Visible = false
+		enter.Visible = false
+		discord.Visible = true
+		task.wait(5)
+		passFrame:Destroy()
+		toggleBtn.Visible = true
+	else
+		title.Text = "WRONG PASSWORD"
+	end
+end)
+
+-- ================= HEADER =================
+local header = Instance.new("Frame", main)
+header.Size = UDim2.new(1,0,0,35)
+header.BackgroundColor3 = Color3.fromRGB(170,0,0)
+
+local headerText = Instance.new("TextLabel", header)
+headerText.Size = UDim2.new(1,-35,1,0)
+headerText.Text = "BARITONE CONTROL PANEL"
+headerText.TextScaled = true
+headerText.TextColor3 = Color3.new(1,1,1)
+headerText.BackgroundTransparency = 1
+
+local minimize = Instance.new("TextButton", header)
+minimize.Size = UDim2.new(0,35,1,0)
+minimize.Position = UDim2.new(1,-35,0,0)
+minimize.Text = "-"
+minimize.TextScaled = true
+
+local minimized = false
+minimize.MouseButton1Click:Connect(function()
+	minimized = not minimized
+	main.Size = minimized and UDim2.fromOffset(650,35) or UDim2.fromOffset(650,360)
+end)
+
+-- ================= TABS =================
+local tabs = {"Bring","Teleport Location","Teleport Find","Other"}
+local pages = {}
+
+for i,name in ipairs(tabs) do
+	local b = Instance.new("TextButton", main)
+	b.Size = UDim2.new(0.25,0,0,30)
+	b.Position = UDim2.new((i-1)*0.25,0,0,35)
+	b.Text = name
+	b.BackgroundColor3 = Color3.fromRGB(40,40,40)
+	b.TextColor3 = Color3.new(1,1,1)
+
+	local page = Instance.new("Frame", main)
+	page.Size = UDim2.new(1,0,1,-65)
+	page.Position = UDim2.new(0,0,0,65)
+	page.Visible = false
+	pages[name] = page
+
+	b.MouseButton1Click:Connect(function()
+		for _,p in pairs(pages) do p.Visible = false end
+		page.Visible = true
+	end)
+end
+pages["Bring"].Visible = true
+
+local function makeBtn(parent,text,y,func)
+	local b = Instance.new("TextButton", parent)
+	b.Size = UDim2.new(0.45,0,0,28)
+	b.Position = UDim2.new(0.05,0,0,y)
+	b.Text = text
+	b.BackgroundColor3 = Color3.fromRGB(60,60,60)
+	b.TextColor3 = Color3.new(1,1,1)
+	b.MouseButton1Click:Connect(func)
+end
+
+-- ================= BRING =================
+local bringScroll = Instance.new("ScrollingFrame", pages["Bring"])
+bringScroll.Size = UDim2.new(1,0,1,0)
+bringScroll.ScrollBarThickness = 6
+
+local bringItems = {
+"Fuel Canister","Oil Barrel","Coal","Steak","Morsel","Log","Chair",
+"MedKit","Bandage","Broken Microwave","Old Car Engine","Carrot",
+"Berry","Cake","Tyre","Cultist Gem","Diamond","Small Tree",
+"Rifle","Rifle Ammo",
+"Item Chest5","Item Chest6","Item Chest7",
+"Strong Axe","Giant Sack"
+}
+
+local y = 0
+for _,item in ipairs(bringItems) do
+	makeBtn(bringScroll,item,y,function()
+		local offset = 0
+		for _,v in pairs(workspace:GetDescendants()) do
+			if v.Name == item and v:IsA("Model") then
+				local p = v.PrimaryPart or v:FindFirstChildWhichIsA("BasePart")
+				if p then
+					v:SetPrimaryPartCFrame(CFrame.new(hrp.Position + Vector3.new(offset,0,-6)))
+					offset += 4
+				end
+			end
+		end
+	end)
+	y += 32
+end
+bringScroll.CanvasSize = UDim2.new(0,0,0,y+10)
+
+-- ================= TELEPORT LOCATION =================
+makeBtn(pages["Teleport Location"],"MainFire",0,function()
+	local t = workspace:FindFirstChild("MainFire",true)
+	if t then hrp.CFrame = (t.PrimaryPart or t):GetPivot() end
+end)
+
+makeBtn(pages["Teleport Location"],"Log Cabin",35,function()
+	local t = workspace:FindFirstChild("Log Cabin",true)
+	if t then hrp.CFrame = (t.PrimaryPart or t):GetPivot() end
+end)
+
+makeBtn(pages["Teleport Location"],"Crashed Plane",70,function()
+	local t = workspace:FindFirstChild("Crashed Plane",true)
+	if t then hrp.CFrame = (t.PrimaryPart or t):GetPivot() end
+end)
+
+-- ================= TELEPORT FIND =================
+makeBtn(pages["Teleport Find"],"Random Item Chest",0,function()
+	local list = {}
+	for _,v in pairs(workspace:GetDescendants()) do
+		if v.Name == "Item Chest5" or v.Name == "Item Chest6" or v.Name == "Item Chest7" then
+			table.insert(list,v)
+		end
+	end
+	if #list > 0 then
+		local c = list[math.random(#list)]
+		hrp.CFrame = (c.PrimaryPart or c):GetPivot()
+	end
+end)
+
+for i=1,4 do
+	makeBtn(pages["Teleport Find"],"Child Teleport "..i,i*35,function()
+		local name = i==1 and "Lost Child" or "Lost Child"..i
+		local c = workspace:FindFirstChild(name,true)
+		if c then hrp.CFrame = (c.PrimaryPart or c):GetPivot() end
+	end)
+end
+
+-- ================= OTHER =================
+local flying = false
+makeBtn(pages["Other"],"Fly (250)",0,function()
+	flying = not flying
+end)
+
+RunService.RenderStepped:Connect(function()
+	if flying then
+		hrp.Velocity = workspace.CurrentCamera.CFrame.LookVector * 250
+	end
+end)
+
+makeBtn(pages["Other"],"Map Completer Beta",35,function()
+	for _,tree in pairs(workspace:GetDescendants()) do
+		if tree.Name == "Small Tree" and tree:IsA("Model") then
+			local p = tree.PrimaryPart or tree:FindFirstChildWhichIsA("BasePart")
+			if p then
+				hrp.CFrame = p.CFrame + Vector3.new(0,3,0)
+				task.wait(0.12)
+			end
+		end
+	end
+end)
+
+-- ================= FAST CHEST =================
+local fastChest = false
+local original = {}
+
+makeBtn(pages["Other"],"Fast Chest",70,function()
+	fastChest = not fastChest
+
+	for _,v in pairs(workspace:GetDescendants()) do
+		if v:IsA("ProximityPrompt") then
+			if fastChest then
+				if not original[v] then
+					original[v] = v.HoldDuration
+				end
+				v.HoldDuration = 0.5
+			else
+				if original[v] then
+					v.HoldDuration = original[v]
+				end
+			end
+		end
+	end
+end)
