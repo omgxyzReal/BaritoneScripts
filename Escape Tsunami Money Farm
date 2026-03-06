@@ -1,0 +1,103 @@
+local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
+local sg = Instance.new("ScreenGui", game:GetService("CoreGui"))
+
+-- AYARLAR
+_G.TargetBase = nil
+_G.AutoCollect = false
+
+-- ANA PANEL
+local Frame = Instance.new("Frame", sg)
+Frame.Size = UDim2.new(0, 200, 0, 250)
+Frame.Position = UDim2.new(0.5, -100, 0.4, 0)
+Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Frame.BorderSizePixel = 2
+Frame.Active = true
+Frame.Draggable = true -- Paneli sürükleyebilirsin
+
+local Title = Instance.new("TextLabel", Frame)
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Text = "TSUNAMI COLLECTOR"
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+
+-- SCROLLING FRAME (Baseleri Listelemek İçin)
+local Scroll = Instance.new("ScrollingFrame", Frame)
+Scroll.Size = UDim2.new(1, -10, 1, -80)
+Scroll.Position = UDim2.new(0, 5, 0, 40)
+Scroll.CanvasSize = UDim2.new(0, 0, 5, 0)
+Scroll.ScrollBarThickness = 5
+
+local UIList = Instance.new("UIListLayout", Scroll)
+UIList.Padding = UDim.new(0, 5)
+
+-- BAŞLAT/DURDUR BUTONU
+local ToggleBtn = Instance.new("TextButton", Frame)
+ToggleBtn.Size = UDim2.new(1, -10, 0, 30)
+ToggleBtn.Position = UDim2.new(0, 5, 1, -35)
+ToggleBtn.Text = "START COLLECT"
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
+
+-- BASE LİSTESİNİ GÜNCELLEME FONKSİYONU
+local function UpdateBaseList()
+    for _, child in pairs(Scroll:GetChildren()) do
+        if child:IsA("TextButton") then child:Destroy() end
+    end
+
+    -- Oyundaki Tycoonları/Baseleri bul (Klasör ismi Tycoons veya Plots olabilir)
+    local Tycoons = workspace:FindFirstChild("Tycoons") or workspace:FindFirstChild("Plots") or workspace:FindFirstChild("Bases")
+    
+    if Tycoons then
+        for _, v in pairs(Tycoons:GetChildren()) do
+            local OwnerName = "Base"
+            if v:FindFirstChild("Owner") and v.Owner.Value ~= "" then
+                OwnerName = tostring(v.Owner.Value)
+            end
+
+            local b = Instance.new("TextButton", Scroll)
+            b.Size = UDim2.new(1, 0, 0, 25)
+            b.Text = OwnerName
+            b.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+            b.TextColor3 = Color3.new(1, 1, 1)
+
+            b.MouseButton1Click:Connect(function()
+                _G.TargetBase = v
+                Title.Text = "Seçildi: " .. OwnerName
+                for _, btn in pairs(Scroll:GetChildren()) do if btn:IsA("TextButton") then btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70) end end
+                b.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+            end)
+        end
+    end
+end
+
+UpdateBaseList()
+
+-- AUTO COLLECT DÖNGÜSÜ
+task.spawn(function()
+    while true do
+        if _G.AutoCollect and _G.TargetBase then
+            for _, part in pairs(_G.TargetBase:GetDescendants()) do
+                if not _G.AutoCollect then break end
+                if part.Name == "Collect" and (part:IsA("BasePart") or part:IsA("MeshPart")) then
+                    if lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+                        lp.Character.HumanoidRootPart.CFrame = part.CFrame
+                        task.wait(0.5) -- Senin istediğin 0.5 saniye
+                    end
+                end
+            end
+        end
+        task.wait(1)
+    end
+end)
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    _G.AutoCollect = not _G.AutoCollect
+    if _G.AutoCollect then
+        ToggleBtn.Text = "STOP"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+    else
+        ToggleBtn.Text = "START"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+    end
+end)
