@@ -1,0 +1,169 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+-- STATES
+local state = {
+    aim = false,
+    speed = false,
+    esp = false,
+    noclip = false,
+    tpLoop = false,
+    fly = false,
+    autoKill = false
+}
+
+local flySpeed = 70
+local targetSpeedValue = 60
+local followDistance = 5 
+
+--------------------------------------------------
+-- HUB (omgxyz HUB - ENGLISH)
+--------------------------------------------------
+local function setupGui()
+    local sg = player:WaitForChild("PlayerGui"):FindFirstChild("XANTE_HUB") or Instance.new("ScreenGui", player.PlayerGui)
+    sg.Name = "omgxyz_HUB"; sg.ResetOnSpawn = false
+    
+    local f = sg:FindFirstChild("Main") or Instance.new("Frame", sg)
+    f.Name = "Main"; f.Size = UDim2.new(0, 260, 0, 250); f.Position = UDim2.new(0, 15, 0, 15)
+    f.BackgroundColor3 = Color3.fromRGB(20, 20, 20); f.BorderSizePixel = 0
+    if not f:FindFirstChild("UICorner") then Instance.new("UICorner", f).CornerRadius = UDim.new(0, 10) end
+    
+    local function createL(y, name)
+        local l = f:FindFirstChild(name) or Instance.new("TextLabel", f)
+        l.Name = name; l.Size = UDim2.new(1, -15, 0, 26)
+        l.Position = UDim2.new(0, 10, 0, y); l.BackgroundTransparency = 1; l.TextColor3 = Color3.new(1, 1, 1)
+        l.Font = Enum.Font.GothamBold; l.TextSize = 13; l.TextXAlignment = Enum.TextXAlignment.Left; return l
+    end
+    
+    local t = createL(5, "Title")
+    t.Text = "omgxyz HUB"; t.TextColor3 = Color3.fromRGB(255, 85, 0); t.TextSize = 18
+    
+    createL(40, "AimL"); createL(65, "SpeedL"); createL(90, "EspL"); createL(115, "NoclipL")
+    createL(140, "TpL"); createL(165, "FlyL"); createL(190, "KillL")
+    
+    local info = createL(220, "Info")
+    info.Text = "Speed: 60 | Distance: 5 Studs"; info.TextSize = 11; info.TextColor3 = Color3.fromRGB(200, 200, 200)
+    
+    return f
+end
+
+local mainFrame = setupGui()
+
+local function updateHub()
+    mainFrame.AimL.Text = "Aimbot (E): " .. (state.aim and "ON" or "OFF")
+    mainFrame.SpeedL.Text = "Speed 60 (B): " .. (state.speed and "ACTIVE" or "NORMAL")
+    mainFrame.EspL.Text = "ESP (R): " .. (state.esp and "ON" or "OFF")
+    mainFrame.NoclipL.Text = "Noclip (Y): " .. (state.noclip and "ON" or "OFF")
+    mainFrame.TpL.Text = "Follow (U): " .. (state.tpLoop and "ACTIVE" or "OFF")
+    mainFrame.FlyL.Text = "Fly (X): " .. (state.fly and "ACTIVE" or "OFF")
+    mainFrame.KillL.Text = "HUNTER MODE (Z): " .. (state.autoKill and "ACTIVE" or "OFF")
+    mainFrame.KillL.TextColor3 = state.autoKill and Color3.fromRGB(255, 50, 50) or Color3.new(1, 1, 1)
+end
+
+--------------------------------------------------
+-- UTILS
+--------------------------------------------------
+local function getClosestPlayer()
+    local closest, shortestDist = nil, math.huge
+    local myRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if not myRoot then return nil end
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= player and p.Character and p.Character:FindFirstChild("Head") then
+            local dist = (p.Character.HumanoidRootPart.Position - myRoot.Position).Magnitude
+            if dist < shortestDist then shortestDist = dist; closest = p end
+        end
+    end
+    return closest
+end
+
+--------------------------------------------------
+-- CONTROLS
+--------------------------------------------------
+UserInputService.InputBegan:Connect(function(input, proc)
+    if proc then return end
+    if input.KeyCode == Enum.KeyCode.E then state.aim = not state.aim
+    elseif input.KeyCode == Enum.KeyCode.B then state.speed = not state.speed
+    elseif input.KeyCode == Enum.KeyCode.R then state.esp = not state.esp
+    elseif input.KeyCode == Enum.KeyCode.Y then state.noclip = not state.noclip
+    elseif input.KeyCode == Enum.KeyCode.U then state.tpLoop = not state.tpLoop 
+    elseif input.KeyCode == Enum.KeyCode.X then state.fly = not state.fly 
+    elseif input.KeyCode == Enum.KeyCode.Z then state.autoKill = not state.autoKill end
+    updateHub()
+end)
+
+--------------------------------------------------
+-- MAIN LOOP
+--------------------------------------------------
+local lastClick = 0
+RunService.RenderStepped:Connect(function()
+    local char = player.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    local root = char.HumanoidRootPart
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    local closestPlr = getClosestPlayer()
+    
+    -- 1. FLY (X)
+    if state.fly then
+        root.Velocity = Vector3.new(0, 0.1, 0)
+        local direction = Vector3.new(0, 0, 0)
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then direction = direction + camera.CFrame.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then direction = direction - camera.CFrame.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then direction = direction - camera.CFrame.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then direction = direction + camera.CFrame.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then direction = direction + Vector3.new(0, 1, 0) end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then direction = direction - Vector3.new(0, 1, 0) end
+        if direction.Magnitude > 0 then
+            root.CFrame = CFrame.new(root.Position, root.Position + direction)
+            root.Velocity = direction.Unit * flySpeed
+        else root.Velocity = Vector3.new(0, 0, 0) end
+    end
+
+    -- 2. SPEED (B)
+    if state.speed and not state.fly and hum and hum.MoveDirection.Magnitude > 0 then
+        root.CFrame = root.CFrame + (hum.MoveDirection * (targetSpeedValue / 150)) 
+    end
+
+    -- 3. NOCLIP (Y)
+    for _, p in pairs(char:GetDescendants()) do
+        if p:IsA("BasePart") then p.CanCollide = not state.noclip end
+    end
+    
+    -- 4. HUNTER (Z) & FOLLOW (U)
+    if state.autoKill and closestPlr and closestPlr.Character:FindFirstChild("HumanoidRootPart") then
+        root.CFrame = closestPlr.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, followDistance)
+        if tick() - lastClick > 0.15 then 
+            VirtualInputManager:SendMouseButtonEvent(0, 0, 1, true, player.PlayerGui, 0) -- RIGHT CLICK
+            task.wait(0.05)
+            VirtualInputManager:SendMouseButtonEvent(0, 0, 1, false, player.PlayerGui, 0)
+            lastClick = tick()
+        end
+    elseif state.tpLoop and closestPlr and closestPlr.Character:FindFirstChild("HumanoidRootPart") then
+        root.CFrame = closestPlr.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, followDistance)
+    end
+    
+    -- 5. ESP & AIMBOT
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= player and p.Character and p.Character:FindFirstChild("Head") then
+            local head = p.Character.Head
+            local b = head:FindFirstChild("PlayerESP") or Instance.new("BillboardGui", head)
+            if b.Name ~= "PlayerESP" then
+                b.Name = "PlayerESP"; b.Size = UDim2.new(0, 100, 0, 30); b.AlwaysOnTop = true
+                local t = Instance.new("TextLabel", b); t.Size = UDim2.new(1, 0, 1, 0)
+                t.BackgroundTransparency = 1; t.TextColor3 = Color3.new(1, 0, 0); t.Text = p.Name
+                t.TextScaled = true; t.Font = Enum.Font.GothamBold
+            end
+            b.Enabled = state.esp
+            
+            if (state.aim or state.autoKill) and closestPlr == p then
+                camera.CFrame = CFrame.lookAt(camera.CFrame.Position, head.Position)
+            end
+        end
+    end
+end)
+
+updateHub()
