@@ -1,0 +1,85 @@
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local UICorner = Instance.new("UICorner")
+local Title = Instance.new("TextLabel")
+local CloseButton = Instance.new("TextButton")
+local ButtonLayout = Instance.new("UIListLayout")
+local ScrollingFrame = Instance.new("ScrollingFrame")
+
+-- GUI Ayarları
+ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.Name = "BaritoneHub"
+
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.Position = UDim2.new(0.5, -100, 0.5, -150)
+MainFrame.Size = UDim2.new(0, 200, 0, 300)
+MainFrame.Active = true
+MainFrame.Draggable = true -- Fareyle sürükleyebilirsin
+
+UICorner.Parent = MainFrame
+
+Title.Parent = MainFrame
+Title.Text = "BARITONE HUB"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 18
+
+CloseButton.Parent = MainFrame
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 0, 0)
+CloseButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+CloseButton.Position = UDim2.new(1, -30, 0, 5)
+CloseButton.Size = UDim2.new(0, 25, 0, 25)
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy() -- GUI'yi tamamen siler
+end)
+
+ScrollingFrame.Parent = MainFrame
+ScrollingFrame.Size = UDim2.new(1, -10, 1, -50)
+ScrollingFrame.Position = UDim2.new(0, 5, 0, 45)
+ScrollingFrame.BackgroundTransparency = 1
+ScrollingFrame.CanvasSize = UDim2.new(0, 0, 1.5, 0)
+ScrollingFrame.ScrollBarThickness = 4
+
+ButtonLayout.Parent = ScrollingFrame
+ButtonLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ButtonLayout.Padding = UDim.new(0, 5)
+
+-- Buton Oluşturma Fonksiyonu
+local function CreateButton(Name, Code)
+    local btn = Instance.new("TextButton")
+    btn.Parent = ScrollingFrame
+    btn.Size = UDim2.new(1, -10, 0, 35)
+    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    btn.Text = Name
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 14
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = btn
+
+    btn.MouseButton1Click:Connect(function()
+        btn.Text = "Yükleniyor..."
+        task.wait(0.5)
+        local success, err = pcall(function()
+            loadstring(game:HttpGet(Code))()
+        end)
+        if success then btn.Text = Name else btn.Text = "Hata!" end
+    end)
+end
+
+-- Scriptlerini Buraya Bağladım
+CreateButton("🌊 Tsunami Money Farm", "https://raw.githubusercontent.com/omgxyzReal/BaritoneScripts/main/Escape%20Tsunami%20Money%20Farm")
+CreateButton("🌙 99 Night", "https://raw.githubusercontent.com/omgxyzReal/BaritoneScripts/refs/heads/main/99%20night")
+CreateButton("⚔️ Forsaken", "https://raw.githubusercontent.com/omgxyzReal/BaritoneScripts/refs/heads/main/Forsaken")
+CreateButton("🔫 Rivals Script", "https://raw.githubusercontent.com/omgxyzReal/BaritoneScripts/refs/heads/main/Rivals%20script")
+CreateButton("⛵ Build A Boat", "https://raw.githubusercontent.com/omgxyzReal/BaritoneScripts/refs/heads/main/Build%20a%20boat")
+CreateButton("🌐 Infinite Yield", "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source")
+
+print("Baritone Hub Başarıyla Yüklendi!")
