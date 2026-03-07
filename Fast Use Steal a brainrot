@@ -1,0 +1,65 @@
+-- [[ omgxyz - Fast e ]] --
+local Player = game:GetService("Players").LocalPlayer
+local PPS = game:GetService("ProximityPromptService")
+local UIS = game:GetService("UserInputService")
+
+-- [📦] DURUM ARAYÜZÜ
+local UI_Target = Player:WaitForChild("PlayerGui")
+if UI_Target:FindFirstChild("DynexStatus") then
+    UI_Target.DynexStatus:Destroy()
+end
+
+local sg = Instance.new("ScreenGui", UI_Target);
+sg.Name = "DynexStatus";
+sg.ResetOnSpawn = false;
+
+local StatusLabel = Instance.new("TextLabel", sg);
+StatusLabel.Size = UDim2.new(0, 180, 0, 35);
+StatusLabel.Position = UDim2.new(0.5, -90, 0, 20);
+StatusLabel.BackgroundColor3 = Color3.fromRGB(15, 15, 15);
+StatusLabel.Text = "INSTANT E: OFF [Q]";
+StatusLabel.TextColor3 = Color3.fromRGB(255, 50, 50);
+StatusLabel.Font = Enum.Font.GothamBold;
+Instance.new("UICorner", StatusLabel);
+
+local stroke = Instance.new("UIStroke", StatusLabel);
+stroke.Thickness = 2;
+stroke.Color = StatusLabel.TextColor3
+
+-- [[ 🚀 LOGIC ]] --
+local IsActive = false
+
+local function toggle()
+    IsActive = not IsActive
+    StatusLabel.Text = IsActive and "INSTANT E: ACTIVE" or "INSTANT E: OFF [Q]"
+    StatusLabel.TextColor3 = IsActive and Color3.fromRGB(0, 255, 150) or Color3.fromRGB(255, 50, 50)
+    stroke.Color = StatusLabel.TextColor3
+end
+
+UIS.InputBegan:Connect(function(i, p)
+    if not p and i.KeyCode == Enum.KeyCode.Z then
+        toggle()
+    end
+end)
+
+-- [⚡] TETİKLEME SİSTEMİ
+PPS.PromptButtonHoldBegan:Connect(function(prompt)
+    if IsActive then
+        prompt.HoldDuration = 0
+        task.spawn(function()
+            prompt:InputHoldBegin()
+            prompt:InputHoldEnd()
+            if fireproximityprompt then 
+                fireproximityprompt(prompt) 
+            end
+        end)
+    end
+end)
+
+PPS.PromptShown:Connect(function(prompt)
+    if IsActive then
+        prompt.HoldDuration = 0
+    end
+end)
+
+print("omgxyz_ fast e Loaded! Z tusuna bas, sistem aktif olacaktir.")
