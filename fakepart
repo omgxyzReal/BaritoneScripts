@@ -1,0 +1,77 @@
+-- [[ BARITONE FAKE PART SYSTEM ]] --
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+
+-- [ 🎨 KÜÇÜCÜK GUI OLUŞTURMA ] --
+local sg = Instance.new("ScreenGui", Player:WaitForChild("PlayerGui"))
+sg.Name = "BaritoneFakePart"
+sg.ResetOnSpawn = false
+
+-- ANA PANEL (Küçücük)
+local Main = Instance.new("Frame", sg)
+Main.Size = UDim2.new(0, 100, 0, 40) -- Çok küçük
+Main.Position = UDim2.new(0.5, -50, 0.1, 0) -- Ekranın üst ortasında
+Main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Main.Active = true
+Main.Draggable = true
+Instance.new("UICorner", Main)
+
+-- ON/OFF BUTONU
+local ToggleBtn = Instance.new("TextButton", Main)
+ToggleBtn.Size = UDim2.new(0.9, 0, 0.8, 0)
+ToggleBtn.Position = UDim2.new(0.05, 0, 0.1, 0)
+ToggleBtn.Text = "FakePart: OFF"
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0) -- Kırmızı
+ToggleBtn.TextColor3 = Color3.new(1, 1, 1)
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextSize = 12
+Instance.new("UICorner", ToggleBtn)
+
+-- [[ 🚀 LOGIC ]] --
+local PartActive = false
+local FakePart = nil
+
+-- Sahte Part'ı Oluştur (Sadece 1 kere)
+local function CreateFakePart()
+    FakePart = Instance.new("Part")
+    FakePart.Name = "BaritonePlatform"
+    FakePart.Size = Vector3.new(10, 1, 10) -- Geniş platform
+    FakePart.Transparency = 0.8 -- Hafif görünür (Hata ayıklamak için, istersen 1 yapabilirsin)
+    FakePart.Color = Color3.fromRGB(0, 120, 255)
+    FakePart.Anchored = true -- Havada asılı kalır
+    FakePart.CanCollide = true -- Üstüne basılabilir
+    FakePart.Parent = workspace
+end
+
+CreateFakePart()
+
+-- Butona Basınca Aç/Kapat
+ToggleBtn.MouseButton1Click:Connect(function()
+    PartActive = not PartActive
+    
+    if PartActive then
+        ToggleBtn.Text = "FakePart: ON"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 80) -- Yeşil
+        FakePart.Transparency = 0.8 -- Açıldığında hafif görünür
+    else
+        ToggleBtn.Text = "FakePart: OFF"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0) -- Kırmızı
+        FakePart.Transparency = 1 -- Kapandığında tamamen görünmez
+        FakePart.CFrame = CFrame.new(0, -1000, 0) -- Haritadan uzaklaştır
+    end
+end)
+
+-- [ 🔄 ANA DÖNGÜ ] --
+-- Platformu her karede karakterin altına taşı
+RunService.Heartbeat:Connect(function()
+    local char = Player.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    
+    if root and FakePart and PartActive then
+        -- Platformu tam olarak ayakların 3.5 birim altına koy
+        FakePart.CFrame = CFrame.new(root.Position + Vector3.new(0, -3.5, 0))
+    end
+end)
+
+print("Baritone Fake Part Yüklendi! ON yap, platform altına gelsin.")
