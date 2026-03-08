@@ -1,0 +1,85 @@
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local RS = game:GetService("RunService")
+
+-- [ 🎨 GUI ] --
+local sg = Instance.new("ScreenGui", Player.PlayerGui); sg.Name = "BaritoneFinalV6"
+local btn = Instance.new("TextButton", sg)
+btn.Size = UDim2.new(0,50,0,50); btn.Position = UDim2.new(0.95,-25,0.5,-25); btn.Text = "B"; btn.BackgroundColor3 = Color3.fromRGB(0,120,255); btn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", btn).CornerRadius = UDim.new(0,12)
+
+local Main = Instance.new("Frame", sg); Main.Size = UDim2.new(0,220,0,380); Main.Position = UDim2.new(0.5,-110,0.2,0); Main.BackgroundColor3 = Color3.fromRGB(20,20,20); Main.Visible = false; Main.Active = true; Main.Draggable = true
+Instance.new("UICorner", Main)
+local Title = Instance.new("TextLabel", Main); Title.Size = UDim2.new(1,0,0,40); Title.Text = "BARITONE"; Title.BackgroundColor3 = Color3.fromRGB(30,30,30); Title.TextColor3 = Color3.fromRGB(0,120,255)
+
+local Scroll = Instance.new("ScrollingFrame", Main); Scroll.Size = UDim2.new(1,0,0.85,0); Scroll.Position = UDim2.new(0,0,0.15,0); Scroll.BackgroundTransparency = 1; Scroll.ScrollBarThickness = 4
+Instance.new("UIListLayout", Scroll).HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+-- [ 🚀 AKICI UÇUŞ MANTIĞI ] --
+local isFlying = false
+
+local function FlyTo(targetName)
+    if isFlying then return end -- Zaten uçuyorsa durdur
+    
+    local char = Player.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    -- Hedefi Bul (Rightwall veya Gap)
+    local target = nil
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v.Name == targetName then
+            target = v
+            break
+        end
+    end
+
+    if target then
+        isFlying = true
+        local targetPos = (target:IsA("Model") and target:GetModelCFrame().Position) or target.Position
+        local flyHeight = 130 -- Tsunami üstü güvenli yükseklik
+        
+        -- Önce Güvenli Yüksekliğe Çık (Anlık)
+        root.CFrame = CFrame.new(root.Position.X, flyHeight, root.Position.Z)
+        
+        -- Hedefe Varana Kadar Her Karede Hareket Et
+        local connection
+        connection = RS.Heartbeat:Connect(function()
+            if not isFlying or not root then connection:Disconnect() return end
+            
+            local currentPos = root.Position
+            local goalPos = Vector3.new(targetPos.X, flyHeight, targetPos.Z)
+            local distance = (goalPos - currentPos).Magnitude
+            
+            if distance > 5 then
+                -- HIZ BURADA: 4 birim per frame (Çok hızlı)
+                local direction = (goalPos - currentPos).Unit
+                root.Velocity = Vector3.new(0,0,0) -- Yerçekimini sıfırla
+                root.CFrame = root.CFrame + (direction * 4) 
+            else
+                -- Hedefe vardın, aşağı güvenli iniş yap
+                root.CFrame = CFrame.new(targetPos + Vector3.new(0, 10, 0))
+                isFlying = false
+                connection:Disconnect()
+            end
+        end)
+    else
+        warn(targetName .. " bulunamadı!")
+    end
+end
+
+-- [ 🔘 BUTONLAR ] --
+local function createBtn(name)
+    local b = Instance.new("TextButton", Scroll)
+    b.Size = UDim2.new(0.9,0,0,30); b.Text = name; b.BackgroundColor3 = Color3.fromRGB(45,45,45); b.TextColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", b)
+    b.MouseButton1Click:Connect(function() FlyTo(name) end)
+end
+
+createBtn("Ground")
+for i = 1, 12 do
+    createBtn("Gap" .. i)
+    createBtn("Rightwall" .. i)
+end
+
+btn.MouseButton1Click:Connect(function() Main.Visible = not Main.Visible end)
