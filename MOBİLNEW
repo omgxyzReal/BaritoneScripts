@@ -1,0 +1,100 @@
+-- [[ DYNEX v560 - MODÜLER MOBİL & PC SÜRÜMÜ ]] --
+
+-- Servisler
+local Players = game:GetService("Players")
+local PPS = game:GetService("ProximityPromptService")
+local UIS = game:GetService("UserInputService")
+
+-- Değişkenler
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+local IsActive = false
+
+-- Eski GUI temizliği
+if PlayerGui:FindFirstChild("DynexStatus") then
+    PlayerGui.DynexStatus:Destroy()
+end
+
+-- [[ ARAYÜZ OLUŞTURMA ]] --
+local sg = Instance.new("ScreenGui")
+sg.Name = "DynexStatus"
+sg.ResetOnSpawn = false
+sg.Parent = PlayerGui
+
+local StatusButton = Instance.new("TextButton")
+StatusButton.Size = UDim2.new(0, 180, 0, 35)
+StatusButton.Position = UDim2.new(0.5, -90, 0, 20)
+StatusButton.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+StatusButton.Text = "INSTANT E: OFF"
+StatusButton.TextColor3 = Color3.fromRGB(255, 50, 50)
+StatusButton.Font = Enum.Font.GothamBold
+StatusButton.TextSize = 14
+StatusButton.AutoButtonColor = true
+StatusButton.Parent = sg
+
+-- Görsel Efektler (Köşe ve Çerçeve)
+Instance.new("UICorner", StatusButton).CornerRadius = UDim.new(0, 6)
+local stroke = Instance.new("UIStroke", StatusButton)
+stroke.Thickness = 2
+stroke.Color = StatusButton.TextColor3
+
+-- [[ FONKSİYONLAR ]] --
+
+local function updateStatus()
+    if IsActive then
+        StatusButton.Text = "INSTANT E: ACTIVE"
+        StatusButton.TextColor3 = Color3.fromRGB(0, 255, 150)
+    else
+        StatusButton.Text = "INSTANT E: OFF"
+        StatusButton.TextColor3 = Color3.fromRGB(255, 50, 50)
+    end
+    stroke.Color = StatusButton.TextColor3
+end
+
+local function toggle()
+    IsActive = not IsActive
+    updateStatus()
+end
+
+-- [[ TETİKLEME MANTIĞI ]] --
+
+local function handlePrompt(prompt)
+    if IsActive then
+        -- Bekleme süresini sıfırla
+        prompt.HoldDuration = 0
+        
+        -- Tetikleme işlemleri
+        task.spawn(function()
+            prompt:InputHoldBegin()
+            prompt:InputHoldEnd()
+            
+            -- Eğer exploit desteği varsa ekstradan tetikle
+            if fireproximityprompt then
+                fireproximityprompt(prompt)
+            end
+        end)
+    end
+end
+
+-- [[ EVENT LİSTENERS ]] --
+
+-- Mobilde tıklama veya PC'de tıklama
+StatusButton.MouseButton1Click:Connect(toggle)
+
+-- PC için Z tuşu kısayolu
+UIS.InputBegan:Connect(function(input, processed)
+    if not processed and input.KeyCode == Enum.KeyCode.Z then
+        toggle()
+    end
+end)
+
+-- Proximity Prompt Olayları
+PPS.PromptButtonHoldBegan:Connect(handlePrompt)
+
+PPS.PromptShown:Connect(function(prompt)
+    if IsActive then
+        prompt.HoldDuration = 0
+    end
+end)
+
+print("Dynex v560 Başarıyla Yüklendi!")
