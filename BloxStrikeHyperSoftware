@@ -4,10 +4,10 @@ local Rayfield = loadstring(game:HttpGet("https://raw.githubusercontent.com/omgx
 
 --// Window creation
 local Window = Rayfield:CreateWindow({
-    Name = "Sqilss",
+    Name = "Hyper Software",
     Icon = 0,
-    LoadingTitle = "loading Sqilss (Blox Strike)",
-    LoadingSubtitle = "by Sqilss",
+    LoadingTitle = "loading Hyper Software (Blox Strike)",
+    LoadingSubtitle = "by omgbackk",
     ShowText = "Menu",
     Theme = "Bloom",
     ToggleUIKeybind = Enum.KeyCode.RightShift,
