@@ -165,11 +165,11 @@ task.spawn(function()
 end)
 
 local HitboxEnabled = false
-local HitboxSize = 3
+local HitboxSize = 5
 local originalHeadSizes = {}
-Tab_Combat:CreateSection("Simple Hitbox (Max 3)")
+Tab_Combat:CreateSection("Simple Hitbox (Max 5)")
 Tab_Combat:CreateToggle({Name = "Enable Hitbox", CurrentValue = false, Flag = "HitboxToggle", Callback = function(Value) HitboxEnabled = Value end})
-Tab_Combat:CreateSlider({Name = "Hitbox Size", Range = {1, 3}, Increment = 0.1, Suffix = " Studs", CurrentValue = 3, Flag = "HitboxSize", Callback = function(Value) HitboxSize = Value end})
+Tab_Combat:CreateSlider({Name = "Hitbox Size", Range = {1, 5}, Increment = 0.1, Suffix = " Studs", CurrentValue = 5, Flag = "HitboxSize", Callback = function(Value) HitboxSize = Value end})
 
 task.spawn(function()
     while task.wait(0.5) do
