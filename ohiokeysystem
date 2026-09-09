@@ -1,0 +1,88 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Eski bir menü varsa temizle
+if PlayerGui:FindFirstChild("KeySystemGui") then
+    PlayerGui.KeySystemGui:Destroy()
+end
+
+-- ScreenGui Oluşturma
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "KeySystemGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = PlayerGui
+
+-- Ana Menü
+local Frame = Instance.new("Frame")
+Frame.Parent = ScreenGui
+Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Frame.BorderSizePixel = 0
+Frame.Position = UDim2.new(0.5, -150, 0.5, -100)
+Frame.Size = UDim2.new(0, 300, 0, 200)
+Frame.Active = true
+Frame.Draggable = true
+
+-- Başlık
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Parent = Frame
+TitleLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+TitleLabel.BorderSizePixel = 0
+TitleLabel.Size = UDim2.new(1, 0, 0, 35)
+TitleLabel.Font = Enum.Font.SourceSansBold
+TitleLabel.Text = "KEY SYSTEM"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.TextSize = 18
+
+-- Giriş Kutusu
+local TextBox = Instance.new("TextBox")
+TextBox.Parent = Frame
+TextBox.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+TextBox.BorderSizePixel = 1
+TextBox.BorderColor3 = Color3.fromRGB(50, 50, 50)
+TextBox.Position = UDim2.new(0.1, 0, 0.35, 0)
+TextBox.Size = UDim2.new(0.8, 0, 0, 40)
+TextBox.Font = Enum.Font.SourceSans
+TextBox.PlaceholderText = "Enter Key Here..."
+TextBox.Text = ""
+TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextBox.TextSize = 14
+
+-- Buton
+local SubmitButton = Instance.new("TextButton")
+SubmitButton.Parent = Frame
+SubmitButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+SubmitButton.BorderSizePixel = 0
+SubmitButton.Position = UDim2.new(0.2, 0, 0.7, 0)
+SubmitButton.Size = UDim2.new(0.6, 0, 0, 35)
+SubmitButton.Font = Enum.Font.SourceSansBold
+SubmitButton.Text = "SUBMIT KEY"
+SubmitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SubmitButton.TextSize = 16
+
+-- Key Kontrolü
+SubmitButton.MouseButton1Click:Connect(function()
+    local enteredKey = string.gsub(TextBox.Text, "%s+", "") -- Boşlukları temizler
+    
+    if enteredKey == "FREE-1DAY-KEY-OHİO" or enteredKey == "FREE-1DAY-KEY-OHIO" then
+        SubmitButton.Text = "Correct Key!"
+        SubmitButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+        task.wait(1)
+        ScreenGui:Destroy()
+        
+        -- Script Çalıştırma Denemesi
+        local success, err = pcall(function()
+            loadstring(game:HttpGet('https://gist.githubusercontent.com/iltmita/bae56642c39cbaab2e9acdf5cf909585/raw'))()
+        end)
+        
+        if not success then
+            warn("Script çalıştırılırken hata oluştu: " .. tostring(err))
+        end
+    else
+        SubmitButton.Text = "Invalid Key!"
+        SubmitButton.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+        task.wait(1.5)
+        SubmitButton.Text = "SUBMIT KEY"
+        SubmitButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    end
+end)
