@@ -79,7 +79,7 @@ SubmitButton.MouseButton1Click:Connect(function()
             warn("Script çalıştırılırken hata oluştu: " .. tostring(err))
         end
     else
-        SubmitButton.Text = "Invalid Key!"
+        SubmitButton.Text = "Yanlış Key!"
         SubmitButton.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
         task.wait(1.5)
         SubmitButton.Text = "SUBMIT KEY"
