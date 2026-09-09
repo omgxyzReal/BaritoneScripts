@@ -64,7 +64,7 @@ SubmitButton.TextSize = 16
 SubmitButton.MouseButton1Click:Connect(function()
     local enteredKey = string.gsub(TextBox.Text, "%s+", "") -- Boşlukları temizler
     
-    if enteredKey == "FREE-1DAY-KEY-OHİO" or enteredKey == "FREE-1DAY-KEY-OHIO" then
+    if enteredKey == "FREE-1DAY-KEY-OHİO" or enteredKey == "FREE" then
         SubmitButton.Text = "Correct Key!"
         SubmitButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
         task.wait(1)
